@@ -1,0 +1,16 @@
+# Maven - Archivos de compilación
+target/
+*.war
+*.ear
+*.zip
+*.tar.gz
+
+# NetBeans - Archivos de configuración local
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Logs y temporales
+*.log
