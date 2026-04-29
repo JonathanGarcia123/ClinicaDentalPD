@@ -14,3 +14,4 @@ nbdist/
 
 # Logs y temporales
 *.log
+.env
