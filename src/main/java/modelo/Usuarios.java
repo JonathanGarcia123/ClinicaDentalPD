@@ -10,7 +10,7 @@ import org.bson.types.ObjectId;
  */
 public class Usuarios {
     private ObjectId idUsuario;
-    private String user;
+    private String email;
     private String password;
     private Roles fkRol;
     private ObjectId datosPersona;
@@ -18,9 +18,9 @@ public class Usuarios {
     public Usuarios() {
     }
 
-    public Usuarios(ObjectId idUsuario, String user, String password, Roles fkRol, ObjectId datosPersona) {
+    public Usuarios(ObjectId idUsuario, String email, String password, Roles fkRol, ObjectId datosPersona) {
         this.idUsuario = idUsuario;
-        this.user = user;
+        this.email = email;
         this.password = password;
         this.fkRol = fkRol;
         this.datosPersona = datosPersona;
@@ -34,12 +34,12 @@ public class Usuarios {
         this.idUsuario = idUsuario;
     }
 
-    public String getUser() {
-        return user;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUser(String user) {
-        this.user = user;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
@@ -65,5 +65,7 @@ public class Usuarios {
     public void setDatosPersona(ObjectId datosPersona) {
         this.datosPersona = datosPersona;
     }
+
+    
 
 }
