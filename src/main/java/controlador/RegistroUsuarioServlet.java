@@ -39,7 +39,8 @@ public class RegistroUsuarioServlet extends HttpServlet {
         
         Usuarios nuevoUser = new Usuarios();
         nuevoUser.setEmail(email);
-        nuevoUser.setPassword(pass);
+        String passCifrada = datos.Encriptar.sha256(pass);
+        nuevoUser.setPassword(passCifrada);
         nuevoUser.setFkRol(rolNuevoUsuario);
         
         UsuarioDAO uDAO = new UsuarioDAO();

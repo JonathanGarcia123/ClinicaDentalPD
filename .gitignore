@@ -15,3 +15,4 @@ nbdist/
 # Logs y temporales
 *.log
 .env
+src/main/resources/config.properties

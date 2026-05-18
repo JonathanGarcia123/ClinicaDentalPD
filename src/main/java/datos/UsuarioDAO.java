@@ -24,9 +24,10 @@ public class UsuarioDAO {
     }
     
     public Usuarios login(String correoEntrada, String passEntrada){
+        String passwordCifrada = datos.Encriptar.sha256(passEntrada);
         Usuarios encontrado = coleccion.find(eq("email",correoEntrada)).first();
         
-        if(encontrado != null && encontrado.getPassword().equals(passEntrada)){
+        if(encontrado != null && encontrado.getPassword().equals(passwordCifrada)){
             return encontrado;
         }
         return null;
