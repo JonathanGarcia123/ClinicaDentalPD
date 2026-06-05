@@ -17,6 +17,7 @@
     }
 
     // 2. EVITAR NULL POINTERS: Inicializamos variables locales vacías para los inputs
+    String curp ="";
     String nombre = "";
     String apPat = "";
     String apMat = "";
@@ -28,6 +29,11 @@
     Pacientes paciente = (Pacientes) session.getAttribute("pacienteLogueado");
 
     if (paciente != null) {
+    
+        if(paciente.getCurp()!= null){
+            curp = paciente.getCurp();
+        }
+        
         if (paciente.getTelefono() != null) {
             telefono = paciente.getTelefono();
         }
@@ -374,6 +380,10 @@
                 <form action="ActualizarPerfilServlet" method="POST">
                     <div class="form-grid">
                         <div class="form-group">
+                            <label>CURP</label>
+                            <input type="text" name="txtCurp" value="<%= curp %>" placeholder="Ingresa tu CURP" required> 
+                        </div>
+                        <div class="form-group">
                             <label>Nombre(s)</label>
                             <input type="text" name="txtNombre" value="<%= nombre %>" placeholder="Ingresa tu nombre" required>
                         </div>
@@ -391,13 +401,13 @@
                             <label>Número de Celular</label>
                             <input type="tel" name="txtTelefono" value="<%= telefono %>" placeholder="Ej: 2291234567" required>
                         </div>
-                        <div class="form-group">
-                            <label>Correo Electrónico (Identificador de Usuario)</label>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Correo Electrónico</label>
                             <input type="email" name="txtEmail" value="<%= user.getEmail() %>" readonly>
                         </div>
                         <div class="form-group" style="grid-column: span 2;">
                             <label> Alergias Médicas / Restricciones</label>
-                            <input type="text" name="txtAlergias" value="<%= alergiasTexto %>" placeholder="Ej: Penicilina, Látex, Ibuprofeno (Si no tienes, deja en blanco o pon 'Ninguna')">
+                            <input type="text" name="txtAlergias" value="<%= alergiasTexto %>" placeholder="Ej: Penicilina, Látex, Ibuprofeno (Si no tienes pon 'Ninguna')">
                         </div>
                     </div>
                     <button type="submit" class="btn-save"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>

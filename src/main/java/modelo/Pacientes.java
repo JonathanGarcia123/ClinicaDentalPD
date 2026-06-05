@@ -9,6 +9,7 @@ import java.util.Date;
 
 public class Pacientes {
     private ObjectId idPaciente;
+    private String curp;
     private NombreCompleto nomCompP;
     private String telefono;
     private String email;
@@ -19,8 +20,9 @@ public class Pacientes {
     public Pacientes() {
     }
 
-    public Pacientes(ObjectId idPaciente, NombreCompleto nomCompP, String telefono, String email, Date fechaRegP, ArrayList<Historial> HistorialClinico, ArrayList<String> alergias) {
+    public Pacientes(ObjectId idPaciente, String curp, NombreCompleto nomCompP, String telefono, String email, Date fechaRegP, ArrayList<Historial> HistorialClinico, ArrayList<String> alergias) {
         this.idPaciente = idPaciente;
+        this.curp = curp;
         this.nomCompP = nomCompP;
         this.telefono = telefono;
         this.email = email;
@@ -35,6 +37,14 @@ public class Pacientes {
 
     public void setIdPaciente(ObjectId idPaciente) {
         this.idPaciente = idPaciente;
+    }
+
+    public String getCurp() {
+        return curp;
+    }
+
+    public void setCurp(String curp) {
+        this.curp = curp;
     }
 
     public NombreCompleto getNomCompP() {

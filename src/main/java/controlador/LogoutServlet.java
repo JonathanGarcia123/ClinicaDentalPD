@@ -4,8 +4,6 @@
  */
 package controlador;
 
-import datos.PacientesDAO;
-import datos.UsuarioDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -13,14 +11,14 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import modelo.Usuarios;
+import jakarta.servlet.http.HttpSession;
 
 /**
  *
  * @author jonyx
  */
-@WebServlet(name = "LoginServlet", urlPatterns = {"/LoginServlet"})
-public class LoginServlet extends HttpServlet {
+@WebServlet(name = "LogoutServlet", urlPatterns = {"/LogoutServlet"})
+public class LogoutServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -33,30 +31,17 @@ public class LoginServlet extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
-        String email = request.getParameter("txtEmail");
-        String pass = request.getParameter("txtPassword");
-        
-        UsuarioDAO uDAO = new UsuarioDAO();
-        
-        Usuarios encontrado = uDAO.login(email,pass);
-        
-        if(encontrado!=null){
-            jakarta.servlet.http.HttpSession session = request.getSession();
-            session.setAttribute("usuarioLogueado",encontrado);
-            
-            PacientesDAO pDAO = new PacientesDAO();
-            
-            modelo.Pacientes pacienteExiste = pDAO.buscarPorEmail(encontrado.getEmail());
-            
-            if(pacienteExiste != null){
-                session.setAttribute("pacienteLogueado", pacienteExiste);
-            }
-            response.sendRedirect("dashboard_paciente.jsp");
-        }else{
-            response.sendRedirect("registro.jsp?error=CredencialesIncorrectas");
+        response.setContentType("text/html;charset=UTF-8");
+        HttpSession session = request.getSession(false);
+    
+        if (session != null) {
+            // 2. Destruir por completo la sesión y borrar sus atributos (usuarioLogueado, pacienteLogueado, etc.)
+            session.invalidate();
         }
-    }
+
+        // 3. Redirigir al usuario a la página de inicio de sesión con un mensaje opcional
+        response.sendRedirect("login.jsp?status=logout");
+        }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
