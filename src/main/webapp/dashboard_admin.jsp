@@ -1,0 +1,270 @@
+<%-- 
+    Document   : dashboard_admin
+    Created on : 4 jun 2026, 7:36:56 p.m.
+    Author     : jonyx
+--%>
+
+<%@page import="modelo.Usuarios"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%
+    // 1. CONTROL DE ACCESO: Si no hay sesión o no es Administrador, directo al login
+    Usuarios user = (Usuarios) session.getAttribute("usuarioLogueado");
+    if (user == null || !user.getFkRol().getNombreRol().equalsIgnoreCase("Administrador")) {
+        response.sendRedirect("login.jsp?error=sesion");
+        return;
+    }
+%>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Clínica Dental PD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f1f5f9; color: #1e293b; }
+
+        /* Navbar */
+        .navbar {
+            background-color: #0f172a; /* Un tono más oscuro y serio para el Admin */
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .navbar .logo { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .btn-logout { color: white; background-color: #ef4444; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; transition: 0.3s; }
+        .btn-logout:hover { background-color: #dc2626; }
+
+        /* Contenedor Principal */
+        .container { max-width: 1300px; margin: 30px auto; padding: 0 20px; }
+        
+        .welcome-card { 
+            background: linear-gradient(135deg, #0f172a 0%, #334155 100%); 
+            color: white; padding: 25px 30px; border-radius: 16px; margin-bottom: 30px; 
+        }
+
+        /* Tabs de Navegación */
+        .tabs-nav { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; overflow-x: auto; }
+        .tab-btn { background: none; border: none; padding: 10px 20px; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; transition: 0.3s; border-radius: 8px; white-space: nowrap; }
+        .tab-btn:hover { background-color: #e2e8f0; color: #0f172a; }
+        .tab-btn.active { background-color: #0f172a; color: white; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Tarjetas y Contenedores */
+        .panel-card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 25px; }
+        .panel-card h3 { color: #0f172a; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+        /* Tablas */
+        .table-responsive { width: 100%; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background-color: #f8fafc; color: #64748b; padding: 12px; font-size: 14px; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 15px 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        
+        /* Estados (Badges) */
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge.active { background-color: #dcfce7; color: #15803d; }
+        .badge.inactive { background-color: #fee2e2; color: #b91c1c; }
+
+        /* Botones de Acción */
+        .btn-table { padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-view { background-color: #e0f2fe; color: #0369a1; }
+        .btn-view:hover { background-color: #bae6fd; }
+        .btn-status { background-color: #f1f5f9; color: #334155; }
+        .btn-status:hover { background-color: #e2e8f0; }
+        
+        .btn-add { background-color: #10b981; color: white; padding: 12px 24px; border-radius: 10px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 20px; transition: 0.2s; }
+        .btn-add:hover { background-color: #059669; transform: translateY(-1px); }
+
+        /* Grid de Formularios de Registro Corto */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-weight: 600; font-size: 13px; color: #475569; }
+        .form-group input, .form-group select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 14px; }
+        .form-group input:focus, .form-group select:focus { border-color: #0f172a; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo"><i class="fa-solid fa-screwdriver-wrench"></i> Panel de Administración - Clínica PD</div>
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <span><i class="fa-solid fa-user-shield"></i> <%= user.getEmail() %></span>
+            <a href="LogoutServlet" class="btn-logout">Cerrar Sesión</a>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="welcome-card">
+            <h1>Bienvenido, Administrador</h1>
+            <p>Control total del sistema: gestión de personal médico, monitor de citas y expedientes de pacientes.</p>
+        </div>
+
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab(event, 'tab-doctores')"><i class="fa-solid fa-user-doctor"></i> Gestionar Doctores</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-pacientes')"><i class="fa-solid fa-hospital-user"></i> Lista de Pacientes</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-citas-global')"><i class="fa-solid fa-notes-medical"></i> Agenda de Citas</button>
+        </div>
+
+        <div id="tab-doctores" class="tab-content active">
+            <div class="panel-card">
+                <h3><i class="fa-solid fa-user-plus"></i> Registrar Nuevo Médico</h3>
+                <form action="RegistrarDoctorServlet" method="POST">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nombre(s)</label>
+                            <input type="text" name="txtNomDoc" placeholder="Ej: Alejandro" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Apellido Paterno</label>
+                            <input type="text" name="txtApPatDoc" placeholder="Ej: Olvera" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Apellido Materno</label>
+                            <input type="text" name="txtApMatDoc" placeholder="Ej: Olvera">
+                        </div>
+                        <div class="form-group">
+                            <label>Especialidad</label>
+                            <select name="cmbEspecialidad" required>
+                                <option value="" disabled selected>-- Elegir --</option>
+                                <option value="General">Odontología General</option>
+                                <option value="Ortodoncia">Ortodoncia</option>
+                                <option value="Endodoncia">Endodoncia</option>
+                                <option value="Cirugia">Cirugía Maxilofacial</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Correo Electrónico</label>
+                            <input type="email" name="txtEmailDoc" placeholder="doctor@clinica.com" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-add" style="margin-bottom: 0; padding: 10px 20px; font-size: 14px;">
+                        <i class="fa-solid fa-user-check"></i> Dar de Alta Doctor
+                    </button>
+                </form>
+            </div>
+
+            <div class="panel-card">
+                <h3><i class="fa-solid fa-address-book"></i> Personal Médico Registrado</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nombre Completo</th>
+                                <th>Especialidad</th>
+                                <th>Correo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Dr. Alejandro Olvera</td>
+                                <td>Odontología General</td>
+                                <td>alejandro.olv@gmail.com</td>
+                                <td><span class="badge active">Activo</span></td>
+                                <td>
+                                    <a href="CambiarEstadoDoctorServlet?id=1&status=Inactivo" class="btn-table btn-status"><i class="fa-solid fa-toggle-on"></i> Desactivar</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Dra. Mariana Costa</td>
+                                <td>Ortodoncia</td>
+                                <td>mariana.cos@gmail.com</td>
+                                <td><span class="badge inactive">Inactivo</span></td>
+                                <td>
+                                    <a href="CambiarEstadoDoctorServlet?id=2&status=Activo" class="btn-table btn-status" style="color: #16a34a;"><i class="fa-solid fa-toggle-off"></i> Activar</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-pacientes" class="tab-content">
+            <div class="panel-card">
+                <h3><i class="fa-solid fa-users"></i> Expedientes del Padrón de Pacientes</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>CURP</th>
+                                <th>Nombre del Paciente</th>
+                                <th>Teléfono</th>
+                                <th>Correo Asociado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>CURP990101HVER03</td>
+                                <td>Juan Pérez Gómez</td>
+                                <td>2291234567</td>
+                                <td>juan@example.com</td>
+                                <td>
+                                    <a href="VerExpedienteAdminServlet?curp=CURP990101HVER03" class="btn-table btn-view"><i class="fa-solid fa-folder-open"></i> Ver Expediente / Historial</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-citas-global" class="tab-content">
+            <div class="panel-card">
+                <h3><i class="fa-solid fa-clock"></i> Registro General de Consultas Programadas</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha / Hora</th>
+                                <th>Paciente</th>
+                                <th>Médico Tratante</th>
+                                <th>Tratamiento</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>15/05/2026 - 10:00 AM</td>
+                                <td>Juan Pérez Gómez</td>
+                                <td>Dr. Alejandro Olvera</td>
+                                <td>Limpieza Profunda</td>
+                                <td><span class="badge active" style="background-color: #e0f2fe; color: #0369a1;">Agendada</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function switchTab(evt, tabId) {
+            const tabContents = document.getElementsByClassName("tab-content");
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove("active");
+            }
+
+            const tabBtns = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < tabBtns.length; i++) {
+                tabBtns[i].classList.remove("active");
+            }
+
+            document.getElementById(tabId).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+</body>
+</html>

@@ -45,14 +45,21 @@ public class LoginServlet extends HttpServlet {
             jakarta.servlet.http.HttpSession session = request.getSession();
             session.setAttribute("usuarioLogueado",encontrado);
             
-            PacientesDAO pDAO = new PacientesDAO();
+            String rol = encontrado.getFkRol().getNombreRol();
             
-            modelo.Pacientes pacienteExiste = pDAO.buscarPorEmail(encontrado.getEmail());
+            if(rol.equalsIgnoreCase("Administrador")){
+                response.sendRedirect("dashboard_admin.jsp");
+            }else if(rol.equalsIgnoreCase("Paciente")){
+                PacientesDAO pDAO = new PacientesDAO();
             
-            if(pacienteExiste != null){
-                session.setAttribute("pacienteLogueado", pacienteExiste);
-            }
-            response.sendRedirect("dashboard_paciente.jsp");
+                modelo.Pacientes pacienteExiste = pDAO.buscarPorEmail(encontrado.getEmail());
+
+                if(pacienteExiste != null){
+                    session.setAttribute("pacienteLogueado", pacienteExiste);
+                }
+                response.sendRedirect("dashboard_paciente.jsp");
+                }
+        
         }else{
             response.sendRedirect("registro.jsp?error=CredencialesIncorrectas");
         }

@@ -18,11 +18,12 @@ public class Doctores {
     private HorarioDoctor horarioDisp;
     private Date fechaReg;
     private Boolean activo;
+    private int consultorio;
 
     public Doctores() {
     }
 
-    public Doctores(ObjectId idAgenda, NombreCompleto nomCompD, String especialidad, String cedulaProf, HorarioDoctor horarioDisp, Date fechaReg, Boolean activo) {
+    public Doctores(ObjectId idAgenda, NombreCompleto nomCompD, String especialidad, String cedulaProf, HorarioDoctor horarioDisp, Date fechaReg, Boolean activo, int consultorio) {
         this.idAgenda = idAgenda;
         this.nomCompD = nomCompD;
         this.especialidad = especialidad;
@@ -30,6 +31,7 @@ public class Doctores {
         this.horarioDisp = horarioDisp;
         this.fechaReg = fechaReg;
         this.activo = activo;
+        this.consultorio = consultorio;
     }
 
     public ObjectId getIdAgenda() {
@@ -87,6 +89,13 @@ public class Doctores {
     public void setActivo(Boolean activo) {
         this.activo = activo;
     }
-    
-    
+
+    public int getConsultorio() {
+        return consultorio;
+    }
+
+    public void setConsultorio(int consultorio) {
+        this.consultorio = consultorio;
+    }
+
 }
