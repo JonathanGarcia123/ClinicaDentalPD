@@ -13,6 +13,8 @@
         response.sendRedirect("login.jsp?error=sesion");
         return;
     }
+    
+    String status = request.getParameter("status");
 %>
 <!DOCTYPE html>
 <html lang="es">
@@ -89,6 +91,34 @@
         .form-group label { font-weight: 600; font-size: 13px; color: #475569; }
         .form-group input, .form-group select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 14px; }
         .form-group input:focus, .form-group select:focus { border-color: #0f172a; }
+        
+        /* Estilo para Alertas de Éxito o Error */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideDown 0.3s ease-in-out;
+        }
+        .alert-success {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+        .alert-error {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -107,6 +137,28 @@
             <h1>Bienvenido, Administrador</h1>
             <p>Control total del sistema: gestión de personal médico, monitor de citas y expedientes de pacientes.</p>
         </div>
+        
+        <% if ("docSuccess".equals(status)) { %>
+            <div class="alert alert-success">
+                <i class="fa-solid fa-circle-check" style="font-size: 18px;"></i>
+                <span>¡El médico ha sido dado de alta exitosamente! Se creó su cuenta de acceso y su expediente médico.</span>
+            </div>
+        <% } else if ("docErrorUsuario".equals(status)) { %>
+            <div class="alert alert-error">
+                <i class="fa-solid fa-circle-exclamation" style="font-size: 18px;"></i>
+                <span>Error: El correo electrónico ya se encuentra registrado en el sistema.</span>
+            </div>
+        <% } else if ("docErrorPerfil".equals(status)) { %>
+            <div class="alert alert-error">
+                <i class="fa-solid fa-circle-exclamation" style="font-size: 18px;"></i>
+                <span>Error: No se pudo generar el perfil del médico en la base de datos.</span>
+            </div>
+        <% } else if ("errorException".equals(status)) { %>
+            <div class="alert alert-error">
+                <i class="fa-solid fa-circle-xmark" style="font-size: 18px;"></i>
+                <span>Ocurrió un error inesperado al procesar los datos del formulario.</span>
+            </div>
+        <% } %>
 
         <div class="tabs-nav">
             <button class="tab-btn active" onclick="switchTab(event, 'tab-doctores')"><i class="fa-solid fa-user-doctor"></i> Gestionar Doctores</button>
@@ -119,6 +171,10 @@
                 <h3><i class="fa-solid fa-user-plus"></i> Registrar Nuevo Médico</h3>
                 <form action="RegistrarDoctorServlet" method="POST">
                     <div class="form-grid">
+                        <div class="form-group">
+                            <label>Cedula Profesional</label>
+                            <input type="text" name="txtCedula" placeholder="Ej: 12345678" required>
+                        </div>
                         <div class="form-group">
                             <label>Nombre(s)</label>
                             <input type="text" name="txtNomDoc" placeholder="Ej: Alejandro" required>
@@ -144,6 +200,77 @@
                         <div class="form-group">
                             <label>Correo Electrónico</label>
                             <input type="email" name="txtEmailDoc" placeholder="doctor@clinica.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Numero telefonico</label>
+                            <input type="tel" name="txtTelefono" placeholder="Ej: 1234567890" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Dias de trabajo</label>
+                            <select name="cmbDiasTrabajo" required>
+                                <option value="" disabled selected>-- Elegir --</option>
+                                <option value="Domingo a Viernes">Domingo a Viernes</option>
+                                <option value="Luneas a Sabado">Luneas a Sabado</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-clock"></i> Hora entrada.</label>
+                            <select name="cmbHoraEntrada" required>
+                                <option value="" disabled selected>-- Selecciona la hora --</option>
+                                <option value="08:00">08:00 AM</option>
+                                <option value="09:00">09:00 AM</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="11:00">11:00 AM</option>
+                                <option value="12:00">12:00 PM</option>
+                                <option value="13:00">01:00 AM</option>
+                                <option value="14:00">02:00 PM</option>
+                                <option value="15:00">03:00 PM</option>
+                                <option value="16:00">04:00 PM</option>
+                                <option value="17:00">05:00 PM.</option>
+                                <option value="18:00">06:00 PM</option>
+                                <option value="19:00">07:00 PM</option>
+                                <option value="20:00">08:00 PM</option>
+                                <option value="21:00">09:00 PM</option>
+                                <option value="22:00">10:00 PM</option>
+                                <option value="23:00">11:00 PM</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-clock"></i> Hora salida.</label>
+                            <select name="cmbHoraSalida" required>
+                                <option value="" disabled selected>-- Selecciona la hora --</option>
+                                <option value="08:00">08:00 AM</option>
+                                <option value="09:00">09:00 AM</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="11:00">11:00 AM</option>
+                                <option value="12:00">12:00 PM</option>
+                                <option value="13:00">01:00 AM</option>
+                                <option value="14:00">02:00 PM</option>
+                                <option value="15:00">03:00 PM</option>
+                                <option value="16:00">04:00 PM</option>
+                                <option value="17:00">05:00 PM.</option>
+                                <option value="18:00">06:00 PM</option>
+                                <option value="19:00">07:00 PM</option>
+                                <option value="20:00">08:00 PM</option>
+                                <option value="21:00">09:00 PM</option>
+                                <option value="22:00">10:00 PM</option>
+                                <option value="23:00">11:00 PM</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña (temporal)</label>
+                            <input type="password" name="txtPasswordDoc" placeholder="••••••••" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Consultorio</label>
+                            <select name="cmbConsultorio" required>
+                                <option value="" disabled selected>-- Selecciona el consultorio --</option>
+                                <option value="1">Consultorio 1</option>
+                                <option value="2">Consultorio 2</option>
+                                <option value="3">Consultorio 3</option>
+                                <option value="4">Consultorio 4</option>
+                                <option value="5">Consultorio 5</option>
+                            </select>
                         </div>
                     </div>
                     <button type="submit" class="btn-add" style="margin-bottom: 0; padding: 10px 20px; font-size: 14px;">
@@ -192,7 +319,7 @@
 
         <div id="tab-pacientes" class="tab-content">
             <div class="panel-card">
-                <h3><i class="fa-solid fa-users"></i> Expedientes del Padrón de Pacientes</h3>
+                <h3><i class="fa-solid fa-users"></i> Expedientes de Pacientes</h3>
                 <div class="table-responsive">
                     <table>
                         <thead>

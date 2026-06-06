@@ -14,16 +14,18 @@ public class Doctores {
     private ObjectId idAgenda;
     private NombreCompleto nomCompD;
     private String especialidad;
-    private String cedulaProf;
+    private int cedulaProf;
     private HorarioDoctor horarioDisp;
     private Date fechaReg;
     private Boolean activo;
     private int consultorio;
+    private String telefono;
+    private String email;
 
     public Doctores() {
     }
 
-    public Doctores(ObjectId idAgenda, NombreCompleto nomCompD, String especialidad, String cedulaProf, HorarioDoctor horarioDisp, Date fechaReg, Boolean activo, int consultorio) {
+    public Doctores(ObjectId idAgenda, NombreCompleto nomCompD, String especialidad, int cedulaProf, HorarioDoctor horarioDisp, Date fechaReg, Boolean activo, int consultorio, String telefono, String email) {
         this.idAgenda = idAgenda;
         this.nomCompD = nomCompD;
         this.especialidad = especialidad;
@@ -32,6 +34,8 @@ public class Doctores {
         this.fechaReg = fechaReg;
         this.activo = activo;
         this.consultorio = consultorio;
+        this.telefono = telefono;
+        this.email = email;
     }
 
     public ObjectId getIdAgenda() {
@@ -58,11 +62,11 @@ public class Doctores {
         this.especialidad = especialidad;
     }
 
-    public String getCedulaProf() {
+    public int getCedulaProf() {
         return cedulaProf;
     }
 
-    public void setCedulaProf(String cedulaProf) {
+    public void setCedulaProf(int cedulaProf) {
         this.cedulaProf = cedulaProf;
     }
 
@@ -96,6 +100,22 @@ public class Doctores {
 
     public void setConsultorio(int consultorio) {
         this.consultorio = consultorio;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
 }

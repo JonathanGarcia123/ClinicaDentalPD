@@ -58,7 +58,7 @@ public class LoginServlet extends HttpServlet {
                     session.setAttribute("pacienteLogueado", pacienteExiste);
                 }
                 response.sendRedirect("dashboard_paciente.jsp");
-                }
+            }
         
         }else{
             response.sendRedirect("registro.jsp?error=CredencialesIncorrectas");
