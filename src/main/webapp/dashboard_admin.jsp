@@ -5,6 +5,9 @@
 --%>
 
 <%@page import="modelo.Usuarios"%>
+<%@page import="java.util.List"%>
+<%@page import="modelo.Doctores"%>
+<%@page import="datos.DoctoresDAO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%
     // 1. CONTROL DE ACCESO: Si no hay sesión o no es Administrador, directo al login
@@ -293,24 +296,46 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>Dr. Alejandro Olvera</td>
-                                <td>Odontología General</td>
-                                <td>alejandro.olv@gmail.com</td>
-                                <td><span class="badge active">Activo</span></td>
-                                <td>
-                                    <a href="CambiarEstadoDoctorServlet?id=1&status=Inactivo" class="btn-table btn-status"><i class="fa-solid fa-toggle-on"></i> Desactivar</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Dra. Mariana Costa</td>
-                                <td>Ortodoncia</td>
-                                <td>mariana.cos@gmail.com</td>
-                                <td><span class="badge inactive">Inactivo</span></td>
-                                <td>
-                                    <a href="CambiarEstadoDoctorServlet?id=2&status=Activo" class="btn-table btn-status" style="color: #16a34a;"><i class="fa-solid fa-toggle-off"></i> Activar</a>
-                                </td>
-                            </tr>
+                            <%
+                                // Instanciamos el DAO y traemos la lista real de MongoDB
+                                DoctoresDAO dDAO = new DoctoresDAO();
+                                List<Doctores> listaDoctores = dDAO.obtenerTodos();
+
+                                if (listaDoctores == null || listaDoctores.isEmpty()) {
+                            %>
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #64748b;">No hay médicos registrados en el sistema.</td>
+                                </tr>
+                            <%
+                                } else {
+                                    // Recorremos cada doctor de la base de datos
+                                    for (Doctores doc : listaDoctores) {
+                                        // Formateamos el nombre completo usando el objeto embebido
+                                        String nombreCompleto = doc.getNomCompD().getNombre() + " " + 
+                                                               doc.getNomCompD().getApPat() + " " + 
+                                                               (doc.getNomCompD().getApMat() != null ? doc.getNomCompD().getApMat() : "");
+                            %>
+                                <tr>
+                                    <td><%= nombreCompleto %></td>
+                                    <td><%= doc.getEspecialidad() %></td>
+                                    <td><%= doc.getEmail() %></td>
+                                    <td>
+                                        <% if (doc.getActivo() != null && doc.getActivo()) { %>
+                                            <span class="badge active">Activo</span>
+                                        <% } else { %>
+                                            <span class="badge inactive">Inactivo</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <a href="editar_doctor.jsp?cedula=<%= doc.getCedulaProf() %>" class="btn-table btn-view" style="background-color: #f0fdf4; color: #16a34a;">
+                                            <i class="fa-solid fa-user-pen"></i> Editar Perfil
+                                        </a>
+                                    </td>
+                                </tr>
+                            <%
+                                    }
+                                }
+                            %>
                         </tbody>
                     </table>
                 </div>
