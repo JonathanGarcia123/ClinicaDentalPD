@@ -53,16 +53,6 @@ public class DoctoresDAO {
         return lista;
     }
     
-    public List <Doctores> obtenerUno() {
-        List <Doctores> lista = new ArrayList<>();
-        try {
-            coleccion.find().into(lista);
-        } catch (Exception e) {
-            System.err.println("Error al obtener la lista de doctores: " + e.getMessage());
-        }
-        return lista;
-    }
-    
     public Doctores buscarPorCedula(int cedulaProf){
         try{
             return coleccion.find(Filters.eq("cedulaProf", cedulaProf)).first();

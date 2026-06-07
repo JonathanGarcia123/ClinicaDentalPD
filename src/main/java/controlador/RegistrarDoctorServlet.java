@@ -46,10 +46,11 @@ public class RegistrarDoctorServlet extends HttpServlet {
         
         if(userLogueado==null){
             response.sendRedirect("login.jsp?error=sesion");
+            return;
         }
         
         try{
-            String cedula = request.getParameter("txtCedula");
+            String cedulaStr = request.getParameter("txtCedula");
             String nombre = request.getParameter("txtNomDoc");
             String apPaterno = request.getParameter("txtApPatDoc");
             String apMaterno = request.getParameter("txtApMatDoc");
@@ -77,7 +78,8 @@ public class RegistrarDoctorServlet extends HttpServlet {
             if(usuarioCreado){
                 Doctores nuevoDoc = new Doctores();
                 
-                nuevoDoc.setCedulaProf(Integer.parseInt(cedula));
+                int cedula = Integer.parseInt(cedulaStr);
+                nuevoDoc.setCedulaProf(cedula);
                 nuevoDoc.setEspecialidad(especialidad);
                 nuevoDoc.setEmail(email);
                 nuevoDoc.setTelefono(telefono);

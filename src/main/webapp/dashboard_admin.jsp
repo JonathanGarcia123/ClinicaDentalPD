@@ -4,10 +4,16 @@
     Author     : jonyx
 --%>
 
+<%@page import="modelo.NombreCompleto"%>
+<%@page import="modelo.Pacientes"%>
+<%@page import="datos.PacientesDAO"%>
 <%@page import="modelo.Usuarios"%>
 <%@page import="java.util.List"%>
 <%@page import="modelo.Doctores"%>
 <%@page import="datos.DoctoresDAO"%>
+<%-- NUEVOS IMPORTS PARA LA PESTAÑA TRATAMIENTOS --%>
+<%@page import="modelo.Tratamientos"%>
+<%@page import="datos.TratamientoDAO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%
     // 1. CONTROL DE ACCESO: Si no hay sesión o no es Administrador, directo al login
@@ -161,14 +167,36 @@
                 <i class="fa-solid fa-circle-xmark" style="font-size: 18px;"></i>
                 <span>Ocurrió un error inesperado al procesar los datos del formulario.</span>
             </div>
+        <% } else if ("treatSuccess".equals(status)) { %>
+            <div class="alert alert-success">
+                <i class="fa-solid fa-circle-check" style="font-size: 18px;"></i>
+                <span>¡El medicamento/tratamiento ha sido agregado al inventario correctamente!</span>
+            </div>
+        <% } else if ("errorInsertTratamiento".equals(status)) { %>
+            <div class="alert alert-error">
+                <i class="fa-solid fa-circle-xmark" style="font-size: 18px;"></i>
+                <span>¡El medicamento/tratamiento no pudo ser insertado correctamente!</span>
+            </div>
+        <% } else if ("updateTreatSuccess".equals(status)) { %>
+            <div class="alert alert-success">
+                <i class="fa-solid fa-circle-check" style="font-size: 18px;"></i>
+                <span>¡Los datos del tratamiento han sido actualizados con éxito!</span>
+            </div>
+        <% } else if ("updateDocError".equals(status)) { %>
+            <div class="alert alert-error">
+                <i class="fa-solid fa-circle-exclamation" style="font-size: 18px;"></i>
+                <span>Error: No se pudo registrar el tratamiento. Comprueba que el código no esté duplicado.</span>
+            </div>
         <% } %>
 
         <div class="tabs-nav">
             <button class="tab-btn active" onclick="switchTab(event, 'tab-doctores')"><i class="fa-solid fa-user-doctor"></i> Gestionar Doctores</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-pacientes')"><i class="fa-solid fa-hospital-user"></i> Lista de Pacientes</button>
+            <button class="tab-btn" onclick="switchTab(event, 'tab-tratamientos')"><i class="fa-solid fa-pills"></i> Tratamientos y Medicamentos</button>
             <button class="tab-btn" onclick="switchTab(event, 'tab-citas-global')"><i class="fa-solid fa-notes-medical"></i> Agenda de Citas</button>
         </div>
 
+        <!-- PESTAÑA 1: DOCTORES -->
         <div id="tab-doctores" class="tab-content active">
             <div class="panel-card">
                 <h3><i class="fa-solid fa-user-plus"></i> Registrar Nuevo Médico</h3>
@@ -297,7 +325,6 @@
                         </thead>
                         <tbody>
                             <%
-                                // Instanciamos el DAO y traemos la lista real de MongoDB
                                 DoctoresDAO dDAO = new DoctoresDAO();
                                 List<Doctores> listaDoctores = dDAO.obtenerTodos();
 
@@ -308,9 +335,7 @@
                                 </tr>
                             <%
                                 } else {
-                                    // Recorremos cada doctor de la base de datos
                                     for (Doctores doc : listaDoctores) {
-                                        // Formateamos el nombre completo usando el objeto embebido
                                         String nombreCompleto = doc.getNomCompD().getNombre() + " " + 
                                                                doc.getNomCompD().getApPat() + " " + 
                                                                (doc.getNomCompD().getApMat() != null ? doc.getNomCompD().getApMat() : "");
@@ -342,6 +367,7 @@
             </div>
         </div>
 
+        <!-- PESTAÑA 2: PACIENTES -->
         <div id="tab-pacientes" class="tab-content">
             <div class="panel-card">
                 <h3><i class="fa-solid fa-users"></i> Expedientes de Pacientes</h3>
@@ -357,21 +383,151 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>CURP990101HVER03</td>
-                                <td>Juan Pérez Gómez</td>
-                                <td>2291234567</td>
-                                <td>juan@example.com</td>
-                                <td>
-                                    <a href="VerExpedienteAdminServlet?curp=CURP990101HVER03" class="btn-table btn-view"><i class="fa-solid fa-folder-open"></i> Ver Expediente / Historial</a>
-                                </td>
-                            </tr>
+                            <%
+                                PacientesDAO pDAO = new PacientesDAO();
+                                List<Pacientes> listaPacientes = pDAO.obtenerTodos();
+
+                                if (listaPacientes == null || listaPacientes.isEmpty()) {
+                            %>
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #64748b;">No hay pacientes registrados en el sistema.</td>
+                                </tr>
+                            <%
+                                } else {
+                                    for (Pacientes pac : listaPacientes) {
+                                        String nombreCompletoPac = "Datos incompletos (Primer ingreso)";
+                                        NombreCompleto ncPac = pac.getNomCompP();
+
+                                        if (ncPac != null && ncPac.getNombre() != null) {
+                                            nombreCompletoPac = ncPac.getNombre() + " " + 
+                                                                ncPac.getApPat() + " " + 
+                                                                (ncPac.getApMat() != null ? ncPac.getApMat() : "");
+                                        }
+
+                                        String curpPac = (pac.getCurp() != null) ? pac.getCurp() : "No registrada";
+                                        String telPac = (pac.getTelefono() != null) ? pac.getTelefono() : "No registrado";
+                            %>
+                                <tr>
+                                    <td><%= curpPac %></td>
+                                    <td><%= nombreCompletoPac %></td>
+                                    <td><%= telPac %></td>
+                                    <td><%= pac.getEmail() %></td>
+                                    <td>
+                                        <a href="VerExpedienteAdminServlet?curp=<%= curpPac %>" class="btn-table btn-view">
+                                            <i class="fa-solid fa-folder-open"></i> Ver Expediente / Historial
+                                        </a>
+                                    </td>
+                                </tr>
+                            <%
+                                    }
+                                }
+                            %>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
+        <!-- NUEVA PESTAÑA 3: GESTIONAR TRATAMIENTOS / MEDICAMENTOS -->
+        <div id="tab-tratamientos" class="tab-content">
+            <!-- Formulario de Registro basado en el Modelo -->
+            <div class="panel-card">
+                <h3><i class="fa-solid fa-plus-circle"></i> Registrar Insumo / Tratamiento Médico</h3>
+                <form action="RegistrarTratamientoServlet" method="POST">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Código de Insumo (Numérico)</label>
+                            <input type="number" name="txtCodProducto" placeholder="Ej: 80112" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre del Tratamiento / Medicamento</label>
+                            <input type="text" name="txtNombreTratamiento" placeholder="Ej: Amoxicilina 500mg" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Precio Base ($ MXN)</label>
+                            <input type="number" step="0.01" name="txtPrecioBase" placeholder="Ej: 349.50" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Stock / Cantidad Disponible</label>
+                            <input type="number" name="txtStock" placeholder="Ej: 45" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Caducidad</label>
+                            <input type="date" name="txtFechaCaducidad" required>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Descripción del Servicio o Medicamento</label>
+                            <input type="text" name="txtDescripcion" placeholder="Escribe detalles del uso o restricciones del tratamiento...">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-add" style="margin-bottom: 0; padding: 10px 20px; font-size: 14px; background-color: #0f172a;">
+                        <i class="fa-solid fa-pills"></i> Guardar en Inventario
+                    </button>
+                </form>
+            </div>
+
+            <!-- Tabla de Visualización del Catálogo / Medicamentos -->
+            <div class="panel-card">
+                <h3><i class="fa-solid fa-boxes-stacked"></i> Catálogo de Medicamentos y Servicios Activos</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Medicamento / Tratamiento</th>
+                                <th>Descripción</th>
+                                <th>Precio Base</th>
+                                <th>Stock</th>
+                                <th>Caducidad</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <%
+                                TratamientoDAO tDAO = new TratamientoDAO();
+                                List<Tratamientos> listaTratamientos = tDAO.obtenerTodos();
+                                
+                                if (listaTratamientos == null || listaTratamientos.isEmpty()) {
+                            %>
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: #64748b;">No hay tratamientos ni medicamentos en el inventario.</td>
+                                </tr>
+                            <%
+                                } else {
+                                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                                    for (Tratamientos t : listaTratamientos) {
+                                        String fechaFormat = (t.getFechaCaducidad() != null) ? sdf.format(t.getFechaCaducidad()) : "N/A";
+                            %>
+                                <tr>
+                                    <td><strong>#<%= t.getCodProducto() %></strong></td>
+                                    <td><%= t.getNombre() %></td>
+                                    <td><%= (t.getDescription() != null) ? t.getDescription() : "Sin descripción" %></td>
+                                    <td>$<%= String.format("%.2f", t.getPrecioBase()) %></td>
+                                    <td>
+                                        <% if(t.getStock() <= 5) { %>
+                                            <span class="badge inactive" style="font-size: 13px;"><%= t.getStock() %> (Crítico)</span>
+                                        <% } else { %>
+                                            <span class="badge active" style="background-color: #e0f2fe; color: #0369a1;"><%= t.getStock() %> uds</span>
+                                        <% } %>
+                                    </td>
+                                    <td><%= fechaFormat %></td>
+                                    <td>
+                                        <a href="editar_tratamiento.jsp?codigo=<%= t.getCodProducto() %>" class="btn-table btn-view" style="background-color: #f0fdf4; color: #16a34a;">
+                                            <i class="fa-solid fa-pen-to-square"></i> Editar
+                                        </a>
+                                    </td>
+                                </tr>
+                            <%
+                                    }
+                                }
+                            %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 4: CITAS -->
         <div id="tab-citas-global" class="tab-content">
             <div class="panel-card">
                 <h3><i class="fa-solid fa-clock"></i> Registro General de Consultas Programadas</h3>

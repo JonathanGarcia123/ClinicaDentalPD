@@ -11,6 +11,8 @@ import static com.mongodb.client.model.Filters.eq;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.Updates;
 import jakarta.servlet.Filter;
+import java.util.ArrayList;
+import java.util.List;
 import modelo.Pacientes;
 
 /**
@@ -53,6 +55,16 @@ public class PacientesDAO {
             System.err.println("Error al buscar paciente por email: " + e.getMessage());
             return null;
         }
+    }
+    
+    public List <Pacientes> obtenerTodos() {
+        List <Pacientes> lista = new ArrayList<>();
+        try {
+            coleccion.find().into(lista);
+        } catch (Exception e) {
+            System.err.println("Error al obtener la lista de pacientes: " + e.getMessage());
+        }
+        return lista;
     }
     
 }
