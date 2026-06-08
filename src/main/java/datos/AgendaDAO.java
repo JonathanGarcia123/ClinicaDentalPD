@@ -7,11 +7,13 @@ package datos;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import modelo.Agenda;
 import modelo.Doctores;
+import org.bson.types.ObjectId;
 
 /**
  *
@@ -51,8 +53,8 @@ public class AgendaDAO {
         try {
             
             var filtro = Filters.eq("fkPaciente.email", correoPaciente);
-
-            coleccion.find(filtro).into(lista);
+            var orden = Sorts.ascending("fecha", "hora");
+            coleccion.find(filtro).sort(orden).into(lista);
         } catch (Exception e) {
             System.err.println("Error al obtener la lista de citas en AgendaDAO: " + e.getMessage());
         }
@@ -74,4 +76,16 @@ public class AgendaDAO {
         }
     }
     
+    public boolean actualizarEstatus(ObjectId idCita, String nuevoEstatus) {
+        try {
+            var resultado = coleccion.updateOne(
+                com.mongodb.client.model.Filters.eq("_id", idCita),
+                com.mongodb.client.model.Updates.set("status", nuevoEstatus)
+            );
+            return resultado.getModifiedCount() > 0;
+        } catch (Exception e) {
+            System.err.println("Error al actualizar estatus de cita: " + e.getMessage());
+            return false;
+        }
+    }
 }

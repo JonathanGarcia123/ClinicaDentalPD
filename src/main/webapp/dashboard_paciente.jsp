@@ -361,7 +361,6 @@
                         </thead>
                         <tbody>
                             <%
-                                // Instanciamos el DAO y consultamos exclusivamente las citas del paciente activo por su correo
                                 AgendaDAO aDAO = new AgendaDAO();
                                 List<Agenda> listaCitas = aDAO.obtenerPorPaciente(user.getEmail());
 
@@ -375,23 +374,17 @@
                                 </tr>
                             <%
                                 } else {
-                                    // Formateador para imprimir la fecha de MongoDB de forma limpia
                                     SimpleDateFormat sdfVisual = new SimpleDateFormat("dd/MM/yyyy");
                                     for (Agenda cita : listaCitas) {
                                         String fechaCitaStr = (cita.getFecha() != null) ? sdfVisual.format(cita.getFecha()) : "N/A";
-                                        
-                                        // Extraemos de forma segura el nombre del médico asignado desde el objeto embebido
+
                                         String doctorAsignado = "Por asignar";
                                         if (cita.getFkDoctor() != null && cita.getFkDoctor().getNomCompD() != null) {
                                             doctorAsignado = "Dr(a). " + cita.getFkDoctor().getNomCompD().getNombre() + " " + 
                                                              cita.getFkDoctor().getNomCompD().getApPat();
                                         }
-                                        
-                                        // Color dinámico del badge según el estatus
-                                        String colorStatus = "color: #0369a1;"; // Azul para Activo
-                                        if("Cancelado".equalsIgnoreCase(cita.getStatus())) {
-                                            colorStatus = "color: #ef4444;"; // Rojo para Cancelado
-                                        }
+
+                                        boolean esActiva = "Activo".equalsIgnoreCase(cita.getStatus());
                             %>
                                 <tr>
                                     <td><strong><%= fechaCitaStr %></strong></td>
@@ -400,7 +393,21 @@
                                         <%= cita.getMotivo() %><br>
                                         <small style="color: #64748b;"><%= doctorAsignado %></small>
                                     </td>
-                                    <td><span style="font-weight: 600; <%= colorStatus %>"><%= cita.getStatus() %></span></td>
+                                    <td>
+                                        <% if (esActiva) { %>
+                                            <form action="CancelarCitaServlet" method="POST" style="margin: 0;">
+                                                <input type="hidden" name="txtIdCita" value="<%= cita.getIdAgenda().toHexString() %>">
+
+                                                <select name="cmbStatusCita" onchange="if(confirm('¿Seguro que deseas cancelar esta cita médica?')) this.form.submit(); else this.value='Activo';" 
+                                                        style="padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; font-weight: 600; color: #0369a1; background-color: #f0fdf4; cursor: pointer; width: auto;">
+                                                    <option value="Activo" selected>🟢 Activa / Agendada</option>
+                                                    <option value="Cancelado">🔴 Cancelar Cita</option>
+                                                </select>
+                                            </form>
+                                        <% } else { %>
+                                            <span style="font-weight: 700; color: #ef4444;"><i class="fa-solid fa-circle-xmark"></i> Cancelada</span>
+                                        <% } %>
+                                    </td>
                                 </tr>
                             <%
                                     }
