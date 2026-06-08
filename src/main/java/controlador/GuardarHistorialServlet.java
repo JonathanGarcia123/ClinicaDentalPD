@@ -60,13 +60,23 @@ public class GuardarHistorialServlet extends HttpServlet {
             int codTratamiento = Integer.parseInt(codTratamientoStr);
             TratamientoDAO tDAO = new TratamientoDAO();
             Tratamientos tratamientoAplicado = tDAO.buscarPorCodigo(codTratamiento);
+            
+            datos.DoctoresDAO dDAO = new datos.DoctoresDAO();
+            modelo.Doctores doctorPerfil = dDAO.buscarPorEmail(doctorLogueado.getEmail());
+
+            String nombreFirmaMedico = doctorLogueado.getEmail(); // Clon de respaldo por si acaso
+
+            if (doctorPerfil != null && doctorPerfil.getNomCompD() != null) {
+                // Armamos la cadena hermosa: "Dr(a). Alejandro Olvera"
+                nombreFirmaMedico = "Dr(a). " + doctorPerfil.getNomCompD().getNombre() + " " + doctorPerfil.getNomCompD().getApPat();
+            }
 
             // 3. ARMAR EL OBJETO HISTORIAL SEGÚN TU MODELO
             Historial nuevaNota = new Historial(); // Autogenera el idHistorial internamente
             nuevaNota.setTratamiento(tratamientoAplicado);
             nuevaNota.setObservaciones(observaciones);
             nuevaNota.setFechaAplicacion(new Date()); // Fecha y hora exacta de la consulta (hoy)
-            nuevaNota.setNombreMedico(doctorLogueado.getEmail()); // Guardamos la firma del médico
+            nuevaNota.setNombreMedico(nombreFirmaMedico); // Guardamos la firma del médico
             nuevaNota.setMedicamentosRecetados(medicamentos != null ? medicamentos : "");
 
             // 4. EJECUTAR OPERACIONES EN BASE DE DATOS

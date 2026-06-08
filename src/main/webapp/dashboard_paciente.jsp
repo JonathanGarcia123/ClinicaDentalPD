@@ -58,6 +58,11 @@
             }
         }
     }
+    
+    datos.PacientesDAO historialPacienteDAO = new datos.PacientesDAO();
+    modelo.Pacientes pacienteConHistorial = historialPacienteDAO.buscarPorEmail(user.getEmail());
+    
+    List<modelo.Historial> listaHistorialClinico = (pacienteConHistorial != null) ? pacienteConHistorial.getHistorialClinico() : null;
 %>
 <!DOCTYPE html>
 <html lang="es">
@@ -425,10 +430,53 @@
                 <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;"><i class="fa-solid fa-lock"></i> Este documento es de solo lectura. Solo el médico asignado puede realizar modificaciones de diagnóstico.</p>
                 <table>
                     <thead>
-                        <tr><th>Fecha Consulta</th><th>Doctor</th><th>Diagnóstico / Observaciones</th><th>Tratamiento Recetado</th></tr>
+                        <tr>
+                            <th>Fecha Consulta</th>
+                            <th>Tratamiento Realizado</th>
+                            <th>Doctor Tratante</th>
+                            <th>Diagnóstico / Observaciones</th>
+                            <th>Receta Médica</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        <tr><td>15/05/2026</td><td>Dr. Alejandro Olvera</td><td>Diagnóstico inicial, presencia de caries leves en molares inferiores.</td><td>Limpieza profunda y resinas.</td></tr>
+                        <%
+                            if (listaHistorialClinico == null || listaHistorialClinico.isEmpty()) {
+                        %>
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: #64748b; padding: 25px;">Aún no cuentas con registros clínicos guardados en tu expediente.</td>
+                            </tr>
+                        <%
+                            } else {
+                                SimpleDateFormat sdfHistorial = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
+                                // Bucle inverso: El tratamiento más reciente que te guardó el doctor aparecerá arriba del todo
+                                for (int i = listaHistorialClinico.size() - 1; i >= 0; i--) {
+                                    modelo.Historial nota = listaHistorialClinico.get(i);
+                                    String fechaAplicacionStr = (nota.getFechaAplicacion() != null) ? sdfHistorial.format(nota.getFechaAplicacion()) : "N/A";
+                                    String nombreTratamiento = (nota.getTratamiento() != null) ? nota.getTratamiento().getNombre() : "Servicio Dental";
+                        %>
+                            <tr>
+                                <td><strong><%= fechaAplicacionStr %></strong></td>
+                                <td>
+                                    <span style="background-color: #f0fdf4; color: #16a34a; padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 12px; display: inline-block;">
+                                        <%= nombreTratamiento %>
+                                    </span>
+                                </td>
+                                <td><%= nota.getNombreMedico() %></td>
+                                <td style="color: #475569; max-width: 300px;"><%= nota.getObservaciones() %></td>
+                                <td>
+                                    <% if (nota.getMedicamentosRecetados() != null && !nota.getMedicamentosRecetados().trim().isEmpty()) { %>
+                                        <span style="font-size: 13px; font-style: italic; color: #0369a1;">
+                                            <i class="fa-solid fa-pills"></i> <%= nota.getMedicamentosRecetados() %>
+                                        </span>
+                                    <% } else { %>
+                                        <span style="color: #94a3b8; font-size: 13px;">Ninguno</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <%
+                                }
+                            }
+                        %>
                     </tbody>
                 </table>
             </div>

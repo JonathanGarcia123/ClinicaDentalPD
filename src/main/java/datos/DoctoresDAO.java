@@ -61,4 +61,13 @@ public class DoctoresDAO {
             return null;
         }
     }
+    
+    public Doctores buscarPorEmail(String email){
+        try{
+            return coleccion.find(Filters.eq("email", email)).first();
+        }catch(Exception e){
+            System.err.println("Error al buscar doctor: "+e.getMessage());
+            return null;
+        }
+    }
 }

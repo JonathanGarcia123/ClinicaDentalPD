@@ -415,7 +415,7 @@
                                     <td><%= telPac %></td>
                                     <td><%= pac.getEmail() %></td>
                                     <td>
-                                        <a href="VerExpedienteAdminServlet?curp=<%= curpPac %>" class="btn-table btn-view">
+                                        <a href="ver_expediente.jsp?email=<%= pac.getEmail() %>" class="btn-table btn-view">
                                             <i class="fa-solid fa-folder-open"></i> Ver Expediente / Historial
                                         </a>
                                     </td>
