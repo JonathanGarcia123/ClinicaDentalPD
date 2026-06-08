@@ -1,10 +1,16 @@
 <%-- 
     Document   : agendar_cita
-    Created on : 4 jun 2026, 7:16:23 p.m.
+    Created on : 4 jun 2026, 7:16:23 p.m.
     Author     : jonyx
 --%>
 
 <%@page import="modelo.Usuarios"%>
+<%-- NUEVOS IMPORTS PARA CONSULTAR LA BASE DE DATOS --%>
+<%@page import="java.util.List"%>
+<%@page import="modelo.Doctores"%>
+<%@page import="datos.DoctoresDAO"%>
+<%@page import="modelo.Tratamientos"%>
+<%@page import="datos.TratamientoDAO"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%
     // CONTROL DE ACCESO: Solo pacientes logueados pueden agendar
@@ -107,7 +113,6 @@
             gap: 8px; 
         }
 
-        /* Aplica a los grupos que deban ocupar todo el ancho */
         .full-width {
             grid-column: span 2;
         }
@@ -121,7 +126,7 @@
             font-size: 14px; 
         }
         
-        .form-group input, .form-group select { 
+        .form-group select, .form-group input { 
             width: 100%;
             padding: 12px; 
             border: 1px solid #e2e8f0; 
@@ -133,7 +138,7 @@
             box-sizing: border-box;
         }
         
-        .form-group input:focus, .form-group select:focus { 
+        .form-group select:focus, .form-group input:focus { 
             border-color: #11CAA0; 
             box-shadow: 0 0 0 3px rgba(17, 202, 160, 0.1);
         }
@@ -180,20 +185,45 @@
                         <label><i class="fa-solid fa-user-doctor"></i> Selecciona al Dentista Asignado</label>
                         <select name="cmbDoctor" required>
                             <option value="" disabled selected>-- Elige un médico --</option>
-                            <option value="ID_DOC_ALEJANDRO">Dr. Alejandro Olvera (General)</option>
-                            <option value="ID_DOC_MARIANA">Dra. Mariana Costa (Ortodoncia)</option>
-                            </select>
+                            <%
+                                DoctoresDAO dDAO = new DoctoresDAO();
+                                List<Doctores> listaDocs = dDAO.obtenerTodos();
+                                
+                                if (listaDocs != null) {
+                                    for (Doctores doc : listaDocs) {
+                                        // Filtro de negocio: Solo doctores con estatus Activo
+                                        if (doc.getActivo() != null && doc.getActivo()) {
+                                            String nombreCompleto = "Dr(a). " + doc.getNomCompD().getNombre() + " " + doc.getNomCompD().getApPat();
+                            %>
+                                            <option value="<%= doc.getCedulaProf() %>">
+                                                <%= nombreCompleto %> (<%= doc.getEspecialidad() %>)
+                                            </option>
+                            <%
+                                        }
+                                    }
+                                }
+                            %>
+                        </select>
                     </div>
 
                     <div class="form-group full-width">
                         <label><i class="fa-solid fa-stethoscope"></i> Tratamiento / Servicio Requerido</label>
                         <select name="cmbServicio" required>
                             <option value="" disabled selected>-- Selecciona un tratamiento --</option>
-                            <option value="Limpieza">Limpieza Profunda</option>
-                            <option value="Extraccion">Extracción / Exodoncia</option>
-                            <option value="Carillas">Carillas Estéticas</option>
-                            <option value="Resina">Resinas Dentales</option>
-                            <option value="Ortodoncia">Revisión de Ortodoncia (Brackets)</option>
+                            <%
+                                TratamientoDAO tDAO = new TratamientoDAO();
+                                List<Tratamientos> listaTrats = tDAO.obtenerTodos();
+                                
+                                if (listaTrats != null) {
+                                    for (Tratamientos t : listaTrats) {
+                            %>
+                                        <option value="<%= t.getCodProducto() %>">
+                                            <%= t.getNombre() %> — $<%= String.format("%.2f", t.getPrecioBase()) %>
+                                        </option>
+                            <%
+                                    }
+                                }
+                            %>
                         </select>
                     </div>
 
@@ -226,11 +256,10 @@
     </div>
 
     <script>
-        // Bloquear fechas pasadas en el calendario para que no agenden en días que ya pasaron
         const fechaInput = document.getElementById('txtFecha');
         const hoy = new Date();
         const yyyy = hoy.getFullYear();
-        let mm = hoy.getMonth() + 1; // Enero es 0
+        let mm = hoy.getMonth() + 1;
         let dd = hoy.getUTCDate();
 
         if (mm < 10) mm = '0' + mm;

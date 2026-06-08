@@ -26,7 +26,7 @@ public class DoctoresDAO {
             System.out.println("Doctor insertado correctamente.");
             return true;
         }catch(Exception e){
-            System.out.println("Error al insertar paciente: "+e.getMessage());
+            System.err.println("Error al insertar paciente: "+e.getMessage());
             return false;
         }
     }

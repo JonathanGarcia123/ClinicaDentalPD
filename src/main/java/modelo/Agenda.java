@@ -5,12 +5,14 @@
 package modelo;
 import org.bson.types.ObjectId;
 import java.util.Date;
+import org.bson.codecs.pojo.annotations.BsonId;
 
 /**
  *
  * @author jonyx
  */
 public class Agenda {
+    @BsonId
     private ObjectId idAgenda;
     private Pacientes fkPaciente;
     private Doctores fkDoctor;
