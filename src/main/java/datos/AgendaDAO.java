@@ -41,7 +41,8 @@ public class AgendaDAO {
     public List <Agenda> obtenerTodos() {
         List <Agenda> lista = new ArrayList<>();
         try {
-            coleccion.find().into(lista);
+            var orden = Sorts.ascending("fecha","hora");
+            coleccion.find().sort(orden).into(lista);
         } catch (Exception e) {
             System.err.println("Error al obtener la lista de citas: " + e.getMessage());
         }
@@ -85,6 +86,41 @@ public class AgendaDAO {
             return resultado.getModifiedCount() > 0;
         } catch (Exception e) {
             System.err.println("Error al actualizar estatus de cita: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    public List<Agenda> obtenerPorDoctor(String correoDoctor) {
+        List<Agenda> lista = new ArrayList<>();
+        try {
+            
+            var filtro = Filters.eq("fkDoctor.email", correoDoctor);
+            var orden = Sorts.ascending("fecha", "hora");
+            coleccion.find(filtro).sort(orden).into(lista);
+        } catch (Exception e) {
+            System.err.println("Error al obtener la lista de citas en AgendaDAO: " + e.getMessage());
+        }
+        return lista;
+    }
+    
+    public Agenda buscarPorId(ObjectId idCita) {
+        try {
+            return coleccion.find(com.mongodb.client.model.Filters.eq("_id", idCita)).first();
+        } catch (Exception e) {
+            System.err.println("Error al buscar cita por ID en AgendaDAO: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    public boolean finalizarCita(org.bson.types.ObjectId idCita) {
+        try {
+            var resultado = coleccion.updateOne(
+                com.mongodb.client.model.Filters.eq("_id", idCita),
+                com.mongodb.client.model.Updates.set("status", "Finalizado")
+            );
+            return resultado.getModifiedCount() > 0;
+        } catch (Exception e) {
+            System.err.println("Error al finalizar la cita en AgendaDAO: " + e.getMessage());
             return false;
         }
     }

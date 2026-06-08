@@ -67,4 +67,17 @@ public class PacientesDAO {
         return lista;
     }
     
+    public boolean agregarHistorial(String emailPaciente, modelo.Historial notaClinica) {
+        try {
+            var resultado = coleccion.updateOne(
+                Filters.eq("email", emailPaciente),
+                Updates.push("historialClinico", notaClinica)
+            );
+            return resultado.getModifiedCount() > 0;
+        } catch (Exception e) {
+            System.err.println("Error al insertar historial en PacienteDAO: " + e.getMessage());
+            return false;
+        }
+    }
+    
 }

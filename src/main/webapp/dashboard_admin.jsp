@@ -4,6 +4,8 @@
     Author     : jonyx
 --%>
 
+<%@page import="modelo.Agenda"%>
+<%@page import="datos.AgendaDAO"%>
 <%@page import="modelo.NombreCompleto"%>
 <%@page import="modelo.Pacientes"%>
 <%@page import="datos.PacientesDAO"%>
@@ -563,13 +565,58 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>15/05/2026 - 10:00 AM</td>
-                                <td>Juan Pérez Gómez</td>
-                                <td>Dr. Alejandro Olvera</td>
-                                <td>Limpieza Profunda</td>
-                                <td><span class="badge active" style="background-color: #e0f2fe; color: #0369a1;">Agendada</span></td>
-                            </tr>
+                            <%
+                                // 1. Instanciamos el DAO de Agenda para recuperar todas las citas registradas en MongoDB
+                                AgendaDAO agendaDAO = new AgendaDAO();
+                                List<Agenda> todasLasCitas = agendaDAO.obtenerTodos();
+
+                                if (todasLasCitas == null || todasLasCitas.isEmpty()) {
+                            %>
+                                <tr>
+                                    <td colspan="5" style="text-align: center; color: #64748b;">No hay consultas médicas programadas en el sistema.</td>
+                                </tr>
+                            <%
+                                } else {
+                                    java.text.SimpleDateFormat sdfVisual = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                                    for (Agenda cita : todasLasCitas) {
+                                        // Formateamos la fecha de MongoDB
+                                        String fechaCitaStr = (cita.getFecha() != null) ? sdfVisual.format(cita.getFecha()) : "N/A";
+
+                                        // Extraer nombre del Paciente de forma segura
+                                        String nombrePaciente = "Datos incompletos";
+                                        if (cita.getFkPaciente() != null && cita.getFkPaciente().getNomCompP() != null) {
+                                            nombrePaciente = cita.getFkPaciente().getNomCompP().getNombre() + " " + 
+                                                             cita.getFkPaciente().getNomCompP().getApPat();
+                                        }
+
+                                        // Extraer nombre del Médico de forma segura
+                                        String nombreMedico = "Por asignar";
+                                        if (cita.getFkDoctor() != null && cita.getFkDoctor().getNomCompD() != null) {
+                                            nombreMedico = "Dr(a). " + cita.getFkDoctor().getNomCompD().getNombre() + " " + 
+                                                           cita.getFkDoctor().getNomCompD().getApPat();
+                                        }
+
+                                        // Control dinámico de estilos para el Badge de Estado (Activo vs Cancelado)
+                                        String badgeStyle = "background-color: #e0f2fe; color: #0369a1;"; // Azul para Agendada/Activo
+                                        if ("Cancelado".equalsIgnoreCase(cita.getStatus())) {
+                                            badgeStyle = "background-color: #fee2e2; color: #b91c1c;"; // Rojo para Cancelada
+                                        }
+                            %>
+                                <tr>
+                                    <td><strong><%= fechaCitaStr %> - <%= cita.getHora() %></strong></td>
+                                    <td><%= nombrePaciente %></td>
+                                    <td><%= nombreMedico %></td>
+                                    <td><%= cita.getMotivo() %></td>
+                                    <td>
+                                        <span class="badge" style="<%= badgeStyle %>">
+                                            <%= "Activo".equalsIgnoreCase(cita.getStatus()) ? "Agendada" : cita.getStatus() %>
+                                        </span>
+                                    </td>
+                                </tr>
+                            <%
+                                    }
+                                }
+                            %>
                         </tbody>
                     </table>
                 </div>

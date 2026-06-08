@@ -58,6 +58,8 @@ public class LoginServlet extends HttpServlet {
                     session.setAttribute("pacienteLogueado", pacienteExiste);
                 }
                 response.sendRedirect("dashboard_paciente.jsp");
+            }else if(rol.equalsIgnoreCase("Doctor")){
+                response.sendRedirect("dashboard_doctor.jsp");
             }
         
         }else{
