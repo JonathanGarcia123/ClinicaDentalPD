@@ -7,6 +7,11 @@
 <%@page import="modelo.Usuarios"%>
 <%@page import="modelo.Pacientes"%>
 <%@page import="modelo.NombreCompleto"%>
+<%-- NUEVOS IMPORTS PARA INTEGRAR LA AGENDA DE CITAS --%>
+<%@page import="java.util.List"%>
+<%@page import="modelo.Agenda"%>
+<%@page import="datos.AgendaDAO"%>
+<%@page import="java.text.SimpleDateFormat"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%
     // 1. CONTROL DE ACCESO: Si no hay sesión o no es Paciente, lo botamos al login
@@ -39,7 +44,6 @@
         }
         
         if (paciente.getAlergias() != null && !paciente.getAlergias().isEmpty()) {
-            // Convierte el ArrayList ["Penicilina", "Látex"] en el texto "Penicilina, Látex"
             alergiasTexto = String.join(", ", paciente.getAlergias());
         }
         
@@ -49,7 +53,6 @@
             apPat = (nomComp.getApPat() != null) ? nomComp.getApPat() : "";
             apMat = (nomComp.getApMat() != null) ? nomComp.getApMat() : "";
             
-            // Si el paciente ya tiene un nombre real registrado, personalizamos el banner
             if (!nombre.isEmpty()) {
                 nombreMostrar = nombre + " " + apPat;
             }
@@ -253,7 +256,7 @@
             font-size: 14px; 
         }
 
-        /* Formulario de Perfil (Grid de 2 columnas) con box-sizing */
+        /* Formulario de Perfil */
         .form-grid { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -283,7 +286,7 @@
             border-radius: 10px; 
             outline: none; 
             transition: 0.3s; 
-            box-sizing: border-box; /* <--- Solución para que no se desborde */
+            box-sizing: border-box; 
         }
         
         .form-group input:focus { 
@@ -344,14 +347,65 @@
                     <p style="color: #64748b; font-size: 14px; margin-bottom: 20px;">¿Te toca revisión? Asegura tu lugar con nuestros médicos dentistas.</p>
                     <a href="agendar_cita.jsp" class="btn-action"><i class="fa-solid fa-clock"></i> Agendar Nueva Cita</a>
                 </div>
+                
                 <div class="panel-card">
                     <h3><i class="fa-solid fa-calendar-check"></i> Próximas Visitas</h3>
                     <table>
                         <thead>
-                            <tr><th>Fecha</th><th>Hora</th><th>Especialidad</th><th>Estado</th></tr>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Especialidad / Médico</th>
+                                <th>Estado</th>
+                            </tr>
                         </thead>
                         <tbody>
-                            <tr><td>-- / -- / ----</td><td>-- : --</td><td>No hay citas activas</td><td><span style="color:#64748b;">Pendiente</span></td></tr>
+                            <%
+                                // Instanciamos el DAO y consultamos exclusivamente las citas del paciente activo por su correo
+                                AgendaDAO aDAO = new AgendaDAO();
+                                List<Agenda> listaCitas = aDAO.obtenerPorPaciente(user.getEmail());
+
+                                if (listaCitas == null || listaCitas.isEmpty()) {
+                            %>
+                                <tr>
+                                    <td>-- / -- / ----</td>
+                                    <td>-- : --</td>
+                                    <td>No hay citas activas</td>
+                                    <td><span style="color:#64748b;">Pendiente</span></td>
+                                </tr>
+                            <%
+                                } else {
+                                    // Formateador para imprimir la fecha de MongoDB de forma limpia
+                                    SimpleDateFormat sdfVisual = new SimpleDateFormat("dd/MM/yyyy");
+                                    for (Agenda cita : listaCitas) {
+                                        String fechaCitaStr = (cita.getFecha() != null) ? sdfVisual.format(cita.getFecha()) : "N/A";
+                                        
+                                        // Extraemos de forma segura el nombre del médico asignado desde el objeto embebido
+                                        String doctorAsignado = "Por asignar";
+                                        if (cita.getFkDoctor() != null && cita.getFkDoctor().getNomCompD() != null) {
+                                            doctorAsignado = "Dr(a). " + cita.getFkDoctor().getNomCompD().getNombre() + " " + 
+                                                             cita.getFkDoctor().getNomCompD().getApPat();
+                                        }
+                                        
+                                        // Color dinámico del badge según el estatus
+                                        String colorStatus = "color: #0369a1;"; // Azul para Activo
+                                        if("Cancelado".equalsIgnoreCase(cita.getStatus())) {
+                                            colorStatus = "color: #ef4444;"; // Rojo para Cancelado
+                                        }
+                            %>
+                                <tr>
+                                    <td><strong><%= fechaCitaStr %></strong></td>
+                                    <td><%= cita.getHora() %></td>
+                                    <td>
+                                        <%= cita.getMotivo() %><br>
+                                        <small style="color: #64748b;"><%= doctorAsignado %></small>
+                                    </td>
+                                    <td><span style="font-weight: 600; <%= colorStatus %>"><%= cita.getStatus() %></span></td>
+                                </tr>
+                            <%
+                                    }
+                                }
+                            %>
                         </tbody>
                     </table>
                 </div>

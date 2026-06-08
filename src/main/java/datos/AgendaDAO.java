@@ -46,12 +46,15 @@ public class AgendaDAO {
         return lista;
     }
     
-    public List<Agenda> obtenerPorPaciente(String correoPaciente){
+    public List<Agenda> obtenerPorPaciente(String correoPaciente) {
         List<Agenda> lista = new ArrayList<>();
-        try{
-            coleccion.find(Filters.eq("fkPaciente.usuario.correo",correoPaciente)).into(lista);
-        }catch(Exception e){
-            System.err.println("Error al obtener citas del paciente: " + e.getMessage());
+        try {
+            
+            var filtro = Filters.eq("fkPaciente.email", correoPaciente);
+
+            coleccion.find(filtro).into(lista);
+        } catch (Exception e) {
+            System.err.println("Error al obtener la lista de citas en AgendaDAO: " + e.getMessage());
         }
         return lista;
     }
