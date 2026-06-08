@@ -56,15 +56,26 @@ public class ActualizarTratamientoServlet extends HttpServlet {
             Tratamientos tratamientoExiste = tDAO.buscarPorCodigo(codProducto);
             
             if(tratamientoExiste!=null){
+                
+                if(fechaCaducidadStr!=null&&!fechaCaducidadStr.trim().isEmpty()){
+                    java.text.SimpleDateFormat formato = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                    java.util.Date fechaCaducidad = formato.parse(fechaCaducidadStr);
+                    tratamientoExiste.setFechaCaducidad(fechaCaducidad);
+                }else{
+                    tratamientoExiste.setFechaCaducidad(null);
+                }
+                
+                if(stockSrt!=null&&!stockSrt.trim().isEmpty()){
+                    int stock = Integer.parseInt(stockSrt);
+                    tratamientoExiste.setStock(stock);
+                }else{
+                    tratamientoExiste.setStock(null);
+                }
+                
                 tratamientoExiste.setCodProducto(codProducto);
                 tratamientoExiste.setNombre(nomTratamiento);
                 double precio = Double.parseDouble(precioStr);
                 tratamientoExiste.setPrecioBase(precio);
-                int stock = Integer.parseInt(stockSrt);
-                tratamientoExiste.setStock(stock);
-                java.text.SimpleDateFormat formato = new java.text.SimpleDateFormat("yyyy-MM-dd");
-                java.util.Date fechaCaducidad = formato.parse(fechaCaducidadStr);
-                tratamientoExiste.setFechaCaducidad(fechaCaducidad);
                 tratamientoExiste.setDescription(DescServicio);
                 
                 boolean actualizado = tDAO.actualizarTratamiento(tratamientoExiste);

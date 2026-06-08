@@ -213,14 +213,17 @@
                             <%
                                 TratamientoDAO tDAO = new TratamientoDAO();
                                 List<Tratamientos> listaTrats = tDAO.obtenerTodos();
-                                
+
                                 if (listaTrats != null) {
                                     for (Tratamientos t : listaTrats) {
+                                        // FILTRO DE NEGOCIO: Si no tiene fecha de caducidad, es un servicio clínico agendable
+                                        if (t.getFechaCaducidad() == null) {
                             %>
                                         <option value="<%= t.getCodProducto() %>">
                                             <%= t.getNombre() %> — $<%= String.format("%.2f", t.getPrecioBase()) %>
                                         </option>
                             <%
+                                        }
                                     }
                                 }
                             %>

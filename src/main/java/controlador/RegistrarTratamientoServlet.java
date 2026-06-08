@@ -52,20 +52,32 @@ public class RegistrarTratamientoServlet extends HttpServlet {
             String stockSrt = request.getParameter("txtStock");
             String fechaCaducidadStr = request.getParameter("txtFechaCaducidad");
             String DescServicio = request.getParameter("txtDescripcion");
+            String tipo = request.getParameter("cmbTipo");
             
             Tratamientos nuevoTratamiento = new Tratamientos();
+            
+            if(fechaCaducidadStr!=null && !fechaCaducidadStr.trim().isEmpty()){
+                java.text.SimpleDateFormat formato = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                java.util.Date fechaCaducidad = formato.parse(fechaCaducidadStr);
+                nuevoTratamiento.setFechaCaducidad(fechaCaducidad);
+            }else{
+                nuevoTratamiento.setFechaCaducidad(null);
+            }
+            
+            if(stockSrt!=null && !stockSrt.trim().isEmpty()){
+                int stock = Integer.parseInt(stockSrt);
+                nuevoTratamiento.setStock(stock);
+            }else{
+                nuevoTratamiento.setStock(null);
+            }
             
             int codProducto = Integer.parseInt(codProductoStr);
             nuevoTratamiento.setCodProducto(codProducto);
             nuevoTratamiento.setNombre(nomTratamiento);
             double precio = Double.parseDouble(precioStr);
             nuevoTratamiento.setPrecioBase(precio);
-            int stock = Integer.parseInt(stockSrt);
-            nuevoTratamiento.setStock(stock);
-            java.text.SimpleDateFormat formato = new java.text.SimpleDateFormat("yyyy-MM-dd");
-            java.util.Date fechaCaducidad = formato.parse(fechaCaducidadStr);
-            nuevoTratamiento.setFechaCaducidad(fechaCaducidad);
             nuevoTratamiento.setDescription(DescServicio);
+            nuevoTratamiento.setTipo(tipo);
             
             TratamientoDAO tDAO = new TratamientoDAO();
             boolean tratamientoInsertado = tDAO.insertarTratamiento(nuevoTratamiento);

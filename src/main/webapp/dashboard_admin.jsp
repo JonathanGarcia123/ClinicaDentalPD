@@ -432,36 +432,49 @@
         <div id="tab-tratamientos" class="tab-content">
             <!-- Formulario de Registro basado en el Modelo -->
             <div class="panel-card">
-                <h3><i class="fa-solid fa-plus-circle"></i> Registrar Insumo / Tratamiento Médico</h3>
+                <h3><i class="fa-solid fa-plus-circle"></i> Registrar Insumo / Servicio Médico</h3>
                 <form action="RegistrarTratamientoServlet" method="POST">
                     <div class="form-grid">
+
                         <div class="form-group">
-                            <label>Código de Insumo (Numérico)</label>
+                            <label>Tipo de Registro</label>
+                            <select name="cmbTipo" id="cmbTipo" onchange="evaluarTipo()" required>
+                                <option value="" disabled selected>-- Selecciona el tipo --</option>
+                                <option value="Medicamento">Medicamento / Insumo Físico</option>
+                                <option value="Tratamiento">Tratamiento / Servicio Clínico</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Código (Numérico)</label>
                             <input type="number" name="txtCodProducto" placeholder="Ej: 80112" required>
                         </div>
                         <div class="form-group">
                             <label>Nombre del Tratamiento / Medicamento</label>
-                            <input type="text" name="txtNombreTratamiento" placeholder="Ej: Amoxicilina 500mg" required>
+                            <input type="text" name="txtNombreTratamiento" placeholder="Ej: Resina / Amoxicilina" required>
                         </div>
                         <div class="form-group">
                             <label>Precio Base ($ MXN)</label>
                             <input type="number" step="0.01" name="txtPrecioBase" placeholder="Ej: 349.50" required>
                         </div>
-                        <div class="form-group">
+
+                        <div class="form-group" id="grupoStock">
                             <label>Stock / Cantidad Disponible</label>
-                            <input type="number" name="txtStock" placeholder="Ej: 45" required>
+                            <input type="number" name="txtStock" id="txtStock" placeholder="Ej: 45" required>
                         </div>
-                        <div class="form-group">
+
+                        <div class="form-group" id="grupoCaducidad">
                             <label>Fecha de Caducidad</label>
-                            <input type="date" name="txtFechaCaducidad" required>
+                            <input type="date" name="txtFechaCaducidad" id="txtFechaCaducidad">
                         </div>
+
                         <div class="form-group" style="grid-column: span 2;">
                             <label>Descripción del Servicio o Medicamento</label>
-                            <input type="text" name="txtDescripcion" placeholder="Escribe detalles del uso o restricciones del tratamiento...">
+                            <input type="text" name="txtDescripcion" placeholder="Escribe detalles del uso o restricciones...">
                         </div>
                     </div>
                     <button type="submit" class="btn-add" style="margin-bottom: 0; padding: 10px 20px; font-size: 14px; background-color: #0f172a;">
-                        <i class="fa-solid fa-pills"></i> Guardar en Inventario
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar en Catálogo
                     </button>
                 </form>
             </div>
@@ -512,7 +525,14 @@
                                     </td>
                                     <td><%= fechaFormat %></td>
                                     <td>
-                                        <a href="editar_tratamiento.jsp?codigo=<%= t.getCodProducto() %>" class="btn-table btn-view" style="background-color: #f0fdf4; color: #16a34a;">
+                                        <% 
+                                            // Si no tiene fecha de caducidad, es un Tratamiento clínico
+                                            String paginaDestino = "editar_medicamento.jsp";
+                                            if (t.getFechaCaducidad() == null) {
+                                                paginaDestino = "editar_tratamiento.jsp";
+                                            }
+                                        %>
+                                        <a href="<%= paginaDestino %>?codigo=<%= t.getCodProducto() %>" class="btn-table btn-view" style="background-color: #f0fdf4; color: #16a34a;">
                                             <i class="fa-solid fa-pen-to-square"></i> Editar
                                         </a>
                                     </td>
@@ -572,6 +592,37 @@
 
             document.getElementById(tabId).classList.add("active");
             evt.currentTarget.classList.add("active");
+        }
+        
+        function evaluarTipo() {
+            const tipo = document.getElementById("cmbTipo").value;
+            const grupoCaducidad = document.getElementById("grupoCaducidad");
+            const inputCaducidad = document.getElementById("txtFechaCaducidad");
+
+            const grupoStock = document.getElementById("grupoStock");
+            const inputStock = document.getElementById("txtStock");
+
+            if (tipo === "Tratamiento") {
+                // 1. Ocultamos la Fecha de Caducidad y limpiamos su valor
+                grupoCaducidad.style.display = "none";
+                inputCaducidad.value = ""; 
+                inputCaducidad.removeAttribute("required");
+
+                // 2. Un tratamiento no maneja "piezas de stock" de forma estricta (puedes ocultarlo o ponerlo opcional)
+                // Si prefieres ocultar el stock para los servicios:
+                grupoStock.style.display = "none";
+                inputStock.value = "0"; // Mandamos un 0 por defecto a Java para que no truene el parseo
+                inputStock.removeAttribute("required");
+
+            } else if (tipo === "Medicamento") {
+                // Si es medicamento, ambos campos son visibles y obligatorios
+                grupoCaducidad.style.display = "flex";
+                inputCaducidad.setAttribute("required", "required");
+
+                grupoStock.style.display = "flex";
+                inputStock.value = "";
+                inputStock.setAttribute("required", "required");
+            }
         }
     </script>
 </body>

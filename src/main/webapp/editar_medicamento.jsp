@@ -1,21 +1,16 @@
 <%-- 
-    Document   : editar_tratamiento
-    Created on : 7 jun 2026, 6:21:23 p.m.
-    Author     : jonyx
---%>
-
-<%-- 
-    Document   : editar_treatment
-    Created on : 7 jun 2026
+    Document   : editar_medicamento
+    Created on : 7 jun 2026, 10:43:26 p.m.
     Author     : jonyx
 --%>
 
 <%@page import="modelo.Usuarios"%>
 <%@page import="modelo.Tratamientos"%>
 <%@page import="datos.TratamientoDAO"%>
+<%@page import="java.text.SimpleDateFormat"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%
-    // 1. CONTROL DE ACCESO: Solo el Administrador puede gestionar servicios clínicos
+    // 1. CONTROL DE ACCESO: Solo el Administrador puede gestionar el inventario/tratamientos
     Usuarios user = (Usuarios) session.getAttribute("usuarioLogueado");
     if (user == null || !user.getFkRol().getNombreRol().equalsIgnoreCase("Administrador")) {
         response.sendRedirect("login.jsp?error=sesion");
@@ -32,20 +27,27 @@
             TratamientoDAO tDAO = new TratamientoDAO();
             tratamiento = tDAO.buscarPorCodigo(codigoInt);
         } catch (NumberFormatException e) {
-            System.err.println("Error al parsear el código en el JSP de tratamiento: " + e.getMessage());
+            System.err.println("Error al parsear el código en el JSP de edición: " + e.getMessage());
         }
     }
 
-    // Si el código no existe en MongoDB, regresamos al panel
+    // Si el código no es válido o el tratamiento no existe, regresamos al panel
     if (tratamiento == null) {
         response.sendRedirect("dashboard_admin.jsp?status=treatNotFound");
         return;
     }
 
-    // 3. EXTRAER VALORES EXCLUSIVOS DEL SERVICIO
+    // 3. EXTRAER VALORES Y FORMATEAR LA FECHA PARA EL INPUT DATE (yyyy-MM-dd)
     String nombre = (tratamiento.getNombre() != null) ? tratamiento.getNombre() : "";
     String descripcion = (tratamiento.getDescription() != null) ? tratamiento.getDescription() : "";
     double precio = (tratamiento.getPrecioBase() != null) ? tratamiento.getPrecioBase() : 0.0;
+    int stock = tratamiento.getStock();
+    
+    String fechaFormateada = "";
+    if (tratamiento.getFechaCaducidad() != null) {
+        SimpleDateFormat sdfInput = new SimpleDateFormat("yyyy-MM-dd");
+        fechaFormateada = sdfInput.format(tratamiento.getFechaCaducidad());
+    }
 %>
 <!DOCTYPE html>
 <html lang="es">
@@ -83,8 +85,8 @@
         
         .form-group { display: flex; flex-direction: column; gap: 8px; }
         .form-group label { font-weight: 600; color: #334155; font-size: 14px; }
-        .form-group input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; transition: 0.3s; font-size: 14px; box-sizing: border-box; }
-        .form-group input:focus { border-color: #0f172a; box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08); }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; outline: none; transition: 0.3s; font-size: 14px; box-sizing: border-box; }
+        .form-group input:focus, .form-group select:focus { border-color: #0f172a; box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08); }
         .form-group input[readonly] { background-color: #f8fafc; color: #94a3b8; cursor: not-allowed; }
 
         .btn-save { background-color: #0f172a; color: white; border: none; padding: 14px 28px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.3s; margin-top: 15px; width: 100%; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -94,13 +96,13 @@
 <body>
 
     <div class="navbar">
-        <div class="logo"><i class="fa-solid fa-hand-holding-medical"></i> Configurar Servicio Clínico</div>
+        <div class="logo"><i class="fa-solid fa-boxes-stacked"></i> Modificar Catálogo de Insumos</div>
         <a href="dashboard_admin.jsp" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Cancelar</a>
     </div>
 
     <div class="container">
         <div class="form-card">
-            <h2><i class="fa-solid fa-tooth"></i> Editar Tratamiento: <%= nombre %></h2>
+            <h2><i class="fa-solid fa-pills"></i> Editar: <%= nombre %></h2>
             
             <form action="ActualizarTratamientoServlet" method="POST">
                 <div class="form-grid">
@@ -111,31 +113,34 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>Nombre del Tratamiento / Servicio</label>
+                        <label>Nombre del Tratamiento / Medicamento</label>
                         <input type="text" name="txtNombreTratamiento" value="<%= nombre %>" required>
                     </div>
                     
                     <div class="form-group">
-                        <label>Precio Base / Honorarios ($ MXN)</label>
+                        <label>Precio Base ($ MXN)</label>
                         <input type="number" step="0.01" name="txtPrecioBase" value="<%= precio %>" required>
                     </div>
                     
                     <div class="form-group">
-                        <label>Inventario / Stock</label>
-                        <input type="text" value="No aplica (Servicio Clínico)" readonly>
-                        <input type="hidden" name="txtStock" value="0">
-                        <input type="hidden" name="txtFechaCaducidad" value="">
+                        <label>Stock / Unidades Disponibles</label>
+                        <input type="number" name="txtStock" value="<%= stock %>" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Fecha de Caducidad</label>
+                        <input type="date" name="txtFechaCaducidad" value="<%= fechaFormateada %>" required>
                     </div>
                     
                     <div class="form-group" style="grid-column: span 2;">
-                        <label>Descripción detallada del procedimiento clínico</label>
-                        <input type="text" name="txtDescripcion" value="<%= descripcion %>" placeholder="Ej: Incluye anestesia local, limpieza previa y pulido...">
+                        <label>Descripción del Servicio o Medicamento</label>
+                        <input type="text" name="txtDescripcion" value="<%= descripcion %>" placeholder="Detalles o restricciones...">
                     </div>
                     
                 </div>
                 
                 <button type="submit" class="btn-save">
-                    <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios del Tratamiento
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios en Inventario
                 </button>
             </form>
         </div>

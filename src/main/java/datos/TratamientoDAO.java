@@ -65,4 +65,13 @@ public class TratamientoDAO {
             return null;
         }
     }
+    
+    public Tratamientos buscarPorTipo(String tipo){
+        try{
+            return coleccion.find(Filters.eq("tipo",tipo)).first();
+        }catch(Exception e){
+            System.err.println("Producto no encontrado: "+e.getMessage());
+            return null;
+        }
+    }
 }

@@ -16,12 +16,13 @@ public class Tratamientos {
     private String description;
     private Date fechaCaducidad;
     private Double precioBase;
-    private int stock;
+    private Integer stock;
+    private String tipo;
 
     public Tratamientos() {
     }
 
-    public Tratamientos(ObjectId idTratamiento, int codProducto, String nombre, String description, Date fechaCaducidad, Double precioBase, int stock) {
+    public Tratamientos(ObjectId idTratamiento, int codProducto, String nombre, String description, Date fechaCaducidad, Double precioBase, Integer stock, String tipo) {
         this.idTratamiento = idTratamiento;
         this.codProducto = codProducto;
         this.nombre = nombre;
@@ -29,6 +30,7 @@ public class Tratamientos {
         this.fechaCaducidad = fechaCaducidad;
         this.precioBase = precioBase;
         this.stock = stock;
+        this.tipo = tipo;
     }
 
     public ObjectId getIdTratamiento() {
@@ -79,12 +81,20 @@ public class Tratamientos {
         this.precioBase = precioBase;
     }
 
-    public int getStock() {
+    public Integer getStock() {
         return stock;
     }
 
-    public void setStock(int stock) {
+    public void setStock(Integer stock) {
         this.stock = stock;
     }
 
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+    
 }

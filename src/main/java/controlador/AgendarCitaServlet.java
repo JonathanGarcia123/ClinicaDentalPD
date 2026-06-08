@@ -57,7 +57,7 @@ public class AgendarCitaServlet extends HttpServlet {
             int codTratamiento = Integer.parseInt(codTratamientoStr);
             String fechaStr = request.getParameter("txtFecha");
             String hora = request.getParameter("cmbHora"); 
-            
+            String tipo = "Tratamiento";
             datos.PacientesDAO pDAO = new datos.PacientesDAO();
             modelo.Pacientes paciente = pDAO.buscarPorEmail(userLogueado.getEmail());
             
@@ -71,7 +71,7 @@ public class AgendarCitaServlet extends HttpServlet {
             Doctores doctorSeleccionado = dDAO.buscarPorCedula(cedulaDoc);
             
             TratamientoDAO tDAO = new TratamientoDAO();
-            Tratamientos tratamientoSeleccionado = tDAO.buscarPorCodigo(codTratamiento);
+            Tratamientos tratamientoSeleccionado = tDAO.buscarPorTipo(tipo);
             
             SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd");
             Date fechaCita = formatoFecha.parse(fechaStr);
